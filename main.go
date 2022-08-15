@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"time"
 )
 
 var (
@@ -22,6 +23,7 @@ type Credentials struct {
 	Key		string	`json:"key"`
 	Service		string	`json:"service"`
 	Url		string	`json:"url"`
+	Time		string	`json:"time"`
 }
 
 func StoreCredential(credential Credentials) error {
@@ -48,7 +50,7 @@ func StoreCredential(credential Credentials) error {
 }
 
 func HandleCredentials(c echo.Context) error {
-	credential := Credentials{}
+	credential := Credentials{Time: time.Now().String()}
 	if (c.Request().Header.Get("AccessKey") != SERVER_ACCESS_KEY){
 		fmt.Printf("> Unauthorized\n")
 		return c.String(http.StatusUnauthorized, "{\"status\":\"unauthorized\"}")
