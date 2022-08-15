@@ -12,7 +12,7 @@ import (
 
 var (
 	CLOUDANT_DB=os.Getenv("CLOUDANT_DB")
-	SERVER_PORT=os.Getenv("SERVER_PORT")
+	SERVER_PORT=os.Getenv("PORT")
 	SERVER_ACCESS_KEY=os.Getenv("ACCESS_KEY")
 )
 
