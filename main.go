@@ -75,7 +75,7 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, "AccessKey"},
 	}))
 	e.POST("phishing/credentials", HandleCredentials)
 	e.Logger.Fatal(e.Start(":" + SERVER_PORT))
