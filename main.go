@@ -42,6 +42,7 @@ func StoreCredential(credential Credentials) error {
 	doc.SetProperty("key", credential.Key)
 	doc.SetProperty("service", credential.Service)
 	doc.SetProperty("url", credential.Url)
+	doc.SetProperty("time", credential.Time)
 	options := client.NewPostDocumentOptions(
 		CLOUDANT_DB,
 	).SetDocument(&doc)
