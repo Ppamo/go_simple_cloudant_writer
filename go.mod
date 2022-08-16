@@ -11,6 +11,7 @@ require (
 require (
 	github.com/IBM/go-sdk-core/v5 v5.10.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/go-openapi/errors v0.19.8 // indirect
 	github.com/go-openapi/strfmt v0.21.2 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect

