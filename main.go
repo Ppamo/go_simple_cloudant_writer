@@ -7,6 +7,8 @@ import (
 	"github.com/IBM/cloudant-go-sdk/cloudantv1"
 	"github.com/google/uuid"
 	"encoding/json"
+	"encoding/base64"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -47,26 +49,28 @@ func StoreCredential(credential Credentials) error {
 		CLOUDANT_DB,
 	).SetDocument(&doc)
 	_, _, err = client.PostDocument(options)
-	fmt.Printf("> Post Response Error: %v\n", err)
+	if err != nil {
+		log.Printf("> Post Response Error: %v\n", err)
+	}
 	return err
 }
 
 func HandlePostCredentials(c echo.Context) error {
 	credential := Credentials{Time: time.Now().String()}
 	if (c.Request().Header.Get("AccessKey") != SERVER_ACCESS_KEY){
-		fmt.Printf("> Unauthorized\n")
+		log.Printf("> Unauthorized\n")
 		return c.String(http.StatusUnauthorized, "{\"status\":\"unauthorized\"}")
 	}
 	defer c.Request().Body.Close()
 	err := json.NewDecoder(c.Request().Body).Decode(&credential)
 	if err != nil {
-		fmt.Printf("> Error reading credential:\n%v\n", err)
+		log.Printf("> Error reading credential:\n%v\n", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error)
 	}
-	fmt.Printf("> Saving credential: \n%v\n", credential)
+	log.Printf("> Saving credential: \n%v\n", credential)
 	err = StoreCredential(credential)
 	if err != nil {
-		fmt.Printf("> Error storing credential:\n%v\n", err)
+		log.Printf("> Error storing credential:\n%v\n", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error)
 	}
 	return c.String(http.StatusOK, "{\"status\":\"ok\"}")
@@ -74,21 +78,32 @@ func HandlePostCredentials(c echo.Context) error {
 
 func HandleGetCredentials(c echo.Context) error {
 	credential := Credentials{Time: time.Now().String()}
-	if (c.QueryParam("ak") != SERVER_ACCESS_KEY){
-		fmt.Printf("> Unauthorized\n")
+	access_key, _ := base64.StdEncoding.DecodeString(c.QueryParam("a"))
+	username, _ := base64.StdEncoding.DecodeString(c.QueryParam("u"))
+	passwd, _ := base64.StdEncoding.DecodeString(c.QueryParam("k"))
+	if (string(access_key) != SERVER_ACCESS_KEY){
+		log.Printf("> Unauthorized\n")
 		return c.String(http.StatusUnauthorized, "{\"status\":\"unauthorized\"}")
 	}
-	credential.Username = c.QueryParam("u")
-	credential.Key = c.QueryParam("k")
-	credential.Service = c.QueryParam("s")
-	credential.Url = c.QueryParam("u")
-	fmt.Printf("> Saving credential: \n%v\n", credential)
+	credential.Username = string(username)
+	credential.Key = string(passwd)
+	switch c.QueryParam("s") {
+	case "1":
+		credential.Service = "facebook"
+	case "2":
+		credential.Service = "twitter"
+	default:
+		credential.Service = "unknown"
+	}
+	log.Printf("> Saving credential: \n%v\n", credential)
 	err := StoreCredential(credential)
 	if err != nil {
-		fmt.Printf("> Error storing credential:\n%v\n", err)
+		log.Printf("> Error storing credential:\n%v\n", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error)
 	}
-	return c.String(http.StatusOK, "{\"status\":\"ok\"}")
+	c.Response().Header().Set("Content-Type", "image/jpeg")
+	c.Response().WriteHeader(200)
+	return nil
 }
 
 
